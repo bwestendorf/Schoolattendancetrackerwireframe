@@ -1,0 +1,186 @@
+@inherits LayoutComponentBase
+@using NOCEAttendance.BlazorApp.Themes
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+
+<MudThemeProvider Theme="@NOCETheme.Theme" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <!-- App Bar - Dark Header matching iTendance -->
+    <MudAppBar Elevation="2" Style="background-color: #003B5C; border-bottom: 3px solid #F26522;">
+        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="d-flex align-center justify-space-between px-4">
+            <!-- Logo and Title -->
+            <div class="d-flex align-center gap-3">
+                <MudPaper Elevation="0" Class="d-flex align-center justify-center pa-2" 
+                          Style="width: 48px; height: 48px; border: 2px solid white; background-color: white;">
+                    <MudIcon Icon="@Icons.Material.Filled.School" 
+                             Style="color: #F26522; font-size: 2rem;" />
+                </MudPaper>
+                <div>
+                    <MudText Typo="Typo.h6" Style="color: white; margin: 0;">NOCE iTendance</MudText>
+                    <MudText Typo="Typo.caption" Style="color: #E8F4F8; margin: 0;">
+                        North Orange Continuing Education
+                    </MudText>
+                </div>
+            </div>
+
+            <MudSpacer />
+
+            <!-- Utility Navigation -->
+            <div class="d-flex align-center gap-2" style="border-left: 2px solid #0066A1; padding-left: 16px;">
+                <MudTooltip Text="Help & Documentation">
+                    <MudIconButton Icon="@Icons.Material.Filled.HelpOutline" 
+                                   Style="color: white;" 
+                                   Size="Size.Small" />
+                </MudTooltip>
+                <MudTooltip Text="User Preferences">
+                    <MudIconButton Icon="@Icons.Material.Filled.Settings" 
+                                   Style="color: white;" 
+                                   Size="Size.Small" />
+                </MudTooltip>
+                <MudTooltip Text="System Information">
+                    <MudIconButton Icon="@Icons.Material.Filled.Info" 
+                                   Style="color: white;" 
+                                   Size="Size.Small" />
+                </MudTooltip>
+            </div>
+
+            <!-- User Info -->
+            <AuthorizeView>
+                <Authorized>
+                    <div class="d-flex align-center gap-3" style="border-left: 2px solid #0066A1; padding-left: 16px; margin-left: 16px;">
+                        <div class="d-flex flex-column align-end">
+                            <MudText Typo="Typo.body2" Style="color: white; margin: 0;">
+                                @context.User.Identity?.Name
+                            </MudText>
+                            <MudChip Size="Size.Small" 
+                                     Style="background-color: #F26522; color: white; height: 20px; font-size: 0.7rem;">
+                                @GetUserRole(context)
+                            </MudChip>
+                        </div>
+                        <MudButton Variant="Variant.Outlined" 
+                                   StartIcon="@Icons.Material.Filled.Logout"
+                                   Style="color: white; border-color: #F26522;"
+                                   Size="Size.Small"
+                                   OnClick="@Logout">
+                            Sign Out
+                        </MudButton>
+                    </div>
+                </Authorized>
+            </AuthorizeView>
+        </MudContainer>
+    </MudAppBar>
+
+    <!-- Navigation Menu Bar -->
+    <MudPaper Elevation="0" Square="true" Class="mud-width-full" 
+              Style="background-color: white; border-bottom: 2px solid #E8F4F8;">
+        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="px-4 py-1">
+            <NavMenu />
+        </MudContainer>
+    </MudPaper>
+
+    <!-- Main Content with Sidebars -->
+    <MudMainContent Style="background-color: #F5F5F5; padding: 24px 0;">
+        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="px-4">
+            <MudGrid Spacing="3">
+                <!-- Left Sidebar -->
+                <MudItem xs="12" lg="3">
+                    <MudStack Spacing="3">
+                        <!-- Calendar Widget -->
+                        <CalendarWidget />
+                        
+                        <!-- Quick Info Panel -->
+                        <SidebarPanel Title="Quick Information">
+                            <AuthorizeView>
+                                <Authorized>
+                                    <div class="pa-3">
+                                        <MudStack Spacing="2">
+                                            <div>
+                                                <MudText Typo="Typo.caption" Style="color: #6B7280;">Logged in as:</MudText>
+                                                <MudText Typo="Typo.body2" Style="color: #003B5C;">@context.User.Identity?.Name</MudText>
+                                            </div>
+                                            <MudDivider />
+                                            <div>
+                                                <MudText Typo="Typo.caption" Style="color: #6B7280;">Role:</MudText>
+                                                <MudText Typo="Typo.body2" Style="color: #003B5C;">@GetUserRole(context)</MudText>
+                                            </div>
+                                            <MudDivider />
+                                            <div>
+                                                <MudText Typo="Typo.caption" Style="color: #6B7280;">System Time:</MudText>
+                                                <MudText Typo="Typo.body2" Style="color: #003B5C;">@DateTime.Now.ToShortTimeString()</MudText>
+                                            </div>
+                                        </MudStack>
+                                    </div>
+                                </Authorized>
+                            </AuthorizeView>
+                        </SidebarPanel>
+
+                        <!-- System Links -->
+                        <SidebarPanel Title="System Links">
+                            <MudNavMenu Class="pa-2">
+                                <MudNavLink Href="#" Style="color: #0066A1; font-size: 0.875rem;">• User Manual</MudNavLink>
+                                <MudNavLink Href="#" Style="color: #0066A1; font-size: 0.875rem;">• Support Portal</MudNavLink>
+                                <MudNavLink Href="#" Style="color: #0066A1; font-size: 0.875rem;">• Submit Feedback</MudNavLink>
+                                <MudNavLink Href="#" Style="color: #0066A1; font-size: 0.875rem;">• Privacy Policy</MudNavLink>
+                            </MudNavMenu>
+                        </SidebarPanel>
+                    </MudStack>
+                </MudItem>
+
+                <!-- Main Content -->
+                <MudItem xs="12" lg="9">
+                    <MudPaper Elevation="1" Class="pa-6" Square="true" 
+                              Style="border: 2px solid #E8F4F8; background-color: white;">
+                        @Body
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+    </MudMainContent>
+
+    <!-- Footer -->
+    <MudPaper Elevation="0" Square="true" Class="mud-width-full" 
+              Style="background-color: white; border-top: 4px solid #003B5C;">
+        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="px-4 py-3">
+            <div class="d-flex align-center justify-space-between">
+                <div class="d-flex align-center gap-4">
+                    <MudText Typo="Typo.body2" Style="color: #6B7280;">
+                        © 2025 North Orange Continuing Education
+                    </MudText>
+                    <MudText Typo="Typo.body2" Style="color: #6B7280;">•</MudText>
+                    <MudLink Href="https://noce.edu" Target="_blank" Style="color: #0066A1; font-size: 0.875rem;">
+                        noce.edu
+                    </MudLink>
+                    <MudText Typo="Typo.body2" Style="color: #6B7280;">•</MudText>
+                    <MudLink Href="#" Style="color: #0066A1; font-size: 0.875rem;">
+                        Terms of Service
+                    </MudLink>
+                </div>
+                <MudText Typo="Typo.body2" Style="color: #6B7280;">
+                    Version 1.4.0 • iTendance Style
+                </MudText>
+            </div>
+        </MudContainer>
+    </MudPaper>
+</MudLayout>
+
+@code {
+    private async Task Logout()
+    {
+        NavigationManager.NavigateTo("/MicrosoftIdentity/Account/SignOut", true);
+    }
+
+    private string GetUserRole(AuthenticationState authState)
+    {
+        if (authState.User.IsInRole("AdminIT"))
+            return "Admin IT";
+        if (authState.User.IsInRole("GuestTeacher"))
+            return "Guest Teacher";
+        if (authState.User.IsInRole("Teacher"))
+            return "Teacher";
+        return "User";
+    }
+}

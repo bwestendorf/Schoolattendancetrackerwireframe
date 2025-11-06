@@ -1,0 +1,370 @@
+@page "/attendance/{ClassId:int}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using NOCEAttendance.BlazorApp.Data.Services
+@inject AttendanceService AttendanceService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<PageTitle>Class Attendance - NOCE iTendance</PageTitle>
+
+<!-- Breadcrumb Navigation -->
+<MudBreadcrumbs Items="_breadcrumbItems" Style="padding: 0; margin-bottom: 16px;">
+    <ItemTemplate Context="item">
+        <MudLink Href="@item.Href" Style="color: #0066A1; font-size: 0.875rem;">
+            @if (item.Icon != null)
+            {
+                <MudIcon Icon="@item.Icon" Size="Size.Small" Class="mr-1" />
+            }
+            @item.Text
+        </MudLink>
+    </ItemTemplate>
+    <SeparatorTemplate>
+        <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" Style="color: #6B7280;" />
+    </SeparatorTemplate>
+</MudBreadcrumbs>
+
+<MudDivider Class="mb-4" />
+
+<!-- Page Header -->
+<div class="d-flex justify-space-between align-center mb-4">
+    <div style="border-left: 4px solid #003B5C; padding-left: 16px; flex: 1;">
+        <div class="mb-2">
+            <MudButton Variant="Variant.Outlined"
+                       StartIcon="@Icons.Material.Filled.ArrowBack"
+                       Size="Size.Small"
+                       Style="border: 2px solid #003B5C; color: #003B5C; border-radius: 0;"
+                       Href="/">
+                Back to Classes
+            </MudButton>
+        </div>
+        <MudText Typo="Typo.h4" Style="color: #003B5C; margin-bottom: 4px;">@_className</MudText>
+        <MudText Typo="Typo.body2" Style="color: #6B7280;">
+            @_gradeLevel • Instructor: @_teacherName
+        </MudText>
+    </div>
+    
+    @if (_hasUnsavedChanges)
+    {
+        <MudButton Variant="Variant.Filled"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   Style="background-color: #F26522; color: white; border: 2px solid #F26522; border-radius: 0;"
+                   OnClick="SaveAttendance">
+            Save Attendance Changes
+        </MudButton>
+    }
+</div>
+
+<!-- Date Selector and Stats -->
+<MudPaper Elevation="1" Square="true" Class="mb-4" Style="border: 2px solid #E8F4F8;">
+    <div class="pa-3" style="background-color: #F5F5F5; border-bottom: 2px solid #003B5C;">
+        <MudText Typo="Typo.body2" Style="color: #003B5C;">
+            Attendance Summary for @_selectedDate.ToLongDateString()
+        </MudText>
+    </div>
+    <div class="pa-4">
+        <MudGrid Spacing="3">
+            <!-- Date Selector -->
+            <MudItem xs="12" md="2">
+                <MudPaper Elevation="0" Class="pa-3" Style="background-color: #F5F5F5; border: 2px solid #E8F4F8;">
+                    <MudText Typo="Typo.caption" Class="mb-2" Style="color: #6B7280;">Select Date</MudText>
+                    <MudDatePicker @bind-Date="_selectedDate"
+                                   MaxDate="DateTime.Today"
+                                   DateChanged="OnDateChanged"
+                                   Variant="Variant.Outlined"
+                                   Margin="Margin.Dense"
+                                   Style="border: 2px solid #E8F4F8;" />
+                </MudPaper>
+            </MudItem>
+
+            <!-- Stats Cards -->
+            <MudItem xs="6" md="2">
+                <MudPaper Elevation="0" Class="pa-3 text-center" 
+                          Style="border: 2px solid #E8F4F8; border-left: 4px solid #22C55E;">
+                    <MudText Typo="Typo.caption" Style="color: #6B7280;">Present</MudText>
+                    <MudText Typo="Typo.h4" Style="color: #22C55E;">@_stats.Present</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="6" md="2">
+                <MudPaper Elevation="0" Class="pa-3 text-center" 
+                          Style="border: 2px solid #E8F4F8; border-left: 4px solid #DC2626;">
+                    <MudText Typo="Typo.caption" Style="color: #6B7280;">Absent</MudText>
+                    <MudText Typo="Typo.h4" Style="color: #DC2626;">@_stats.Absent</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="6" md="2">
+                <MudPaper Elevation="0" Class="pa-3 text-center" 
+                          Style="border: 2px solid #E8F4F8; border-left: 4px solid #F26522;">
+                    <MudText Typo="Typo.caption" Style="color: #6B7280;">Late</MudText>
+                    <MudText Typo="Typo.h4" Style="color: #F26522;">@_stats.Late</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="6" md="2">
+                <MudPaper Elevation="0" Class="pa-3 text-center" 
+                          Style="border: 2px solid #E8F4F8; border-left: 4px solid #0066A1;">
+                    <MudText Typo="Typo.caption" Style="color: #6B7280;">Excused</MudText>
+                    <MudText Typo="Typo.h4" Style="color: #0066A1;">@_stats.Excused</MudText>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </div>
+</MudPaper>
+
+<!-- Attendance Table - MudDataGrid (GridView Style) -->
+<MudPaper Elevation="1" Square="true" Style="border: 2px solid #E8F4F8;">
+    <div class="pa-3" style="background-color: #F5F5F5; border-bottom: 2px solid #003B5C;">
+        <MudText Typo="Typo.body2" Style="color: #003B5C;">Student Attendance Records</MudText>
+    </div>
+
+    <MudDataGrid T="StudentAttendanceRow" 
+                 Items="@_attendanceRecords"
+                 Dense="true"
+                 Hover="true"
+                 Bordered="true"
+                 Striped="true"
+                 FixedHeader="true"
+                 Height="600px"
+                 Style="--mud-palette-table-hover: #F3F4F6; --mud-palette-table-striped: #F9FAFB;">
+        <Columns>
+            <PropertyColumn Property="x => x.StudentId" Title="Student ID" />
+            
+            <PropertyColumn Property="x => x.StudentName" Title="Student Name">
+                <CellTemplate>
+                    <div class="d-flex align-center gap-2">
+                        <span>@context.Item.StudentName</span>
+                        @if (context.Item.IsAtRisk)
+                        {
+                            <MudTooltip Text="@GetAtRiskTooltip(context.Item)">
+                                <MudChip Size="Size.Small" 
+                                         Style="background-color: #FEF2F2; border: 2px solid #DC2626; color: #DC2626; height: 24px;">
+                                    <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Small" Class="mr-1" />
+                                    @context.Item.RecentAbsences Absences
+                                </MudChip>
+                            </MudTooltip>
+                        }
+                    </div>
+                </CellTemplate>
+            </PropertyColumn>
+
+            <PropertyColumn Property="x => x.Status" Title="Status">
+                <CellTemplate>
+                    <div class="d-flex align-center gap-2">
+                        @GetStatusIcon(context.Item.Status)
+                        <span>@context.Item.Status</span>
+                    </div>
+                </CellTemplate>
+            </PropertyColumn>
+
+            <PropertyColumn Property="x => x.Notes" Title="Notes">
+                <CellTemplate>
+                    <span style="color: #6B7280;">@(string.IsNullOrEmpty(context.Item.Notes) ? "-" : context.Item.Notes)</span>
+                </CellTemplate>
+            </PropertyColumn>
+
+            <TemplateColumn Title="Actions" CellStyle="text-align: right;">
+                <CellTemplate>
+                    <MudButton Variant="Variant.Outlined"
+                               Size="Size.Small"
+                               Style="border: 2px solid #003B5C; color: #003B5C; border-radius: 0;"
+                               OnClick="@(() => EditAttendance(context.Item))">
+                        Edit
+                    </MudButton>
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+    </MudDataGrid>
+
+    <div class="pa-3" style="background-color: #F5F5F5; border-top: 2px solid #E8F4F8;">
+        <MudText Typo="Typo.caption" Style="color: #6B7280;">
+            Total Records: @_attendanceRecords.Count
+        </MudText>
+    </div>
+</MudPaper>
+
+<!-- Edit Dialog -->
+<MudDialog @bind-IsVisible="_showEditDialog" Options="_dialogOptions">
+    <TitleContent>
+        <div class="pa-3" style="background-color: #003B5C; border-bottom: 2px solid #F26522; margin: -24px -24px 0 -24px;">
+            <MudText Typo="Typo.h6" Style="color: white;">Edit Attendance Record</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        @if (_editingStudent != null)
+        {
+            <div class="pa-4">
+                <MudText Typo="Typo.body2" Class="mb-4">
+                    Update attendance status for @_editingStudent.StudentName
+                </MudText>
+                
+                <MudSelect @bind-Value="_editingStudent.Status" 
+                           Label="Attendance Status *"
+                           Variant="Variant.Outlined"
+                           Style="border: 2px solid #E8F4F8;"
+                           Class="mb-4">
+                    <MudSelectItem Value="@("Present")">Present</MudSelectItem>
+                    <MudSelectItem Value="@("Absent")">Absent</MudSelectItem>
+                    <MudSelectItem Value="@("Late")">Late</MudSelectItem>
+                    <MudSelectItem Value="@("Excused")">Excused</MudSelectItem>
+                </MudSelect>
+
+                <MudTextField @bind-Value="_editingStudent.Notes"
+                              Label="Additional Notes"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              Placeholder="Enter any additional notes or comments..."
+                              Style="border: 2px solid #E8F4F8;" />
+            </div>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined"
+                   Style="border: 2px solid #003B5C; color: #003B5C; border-radius: 0;"
+                   OnClick="CloseEditDialog">
+            Close
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter]
+    public int ClassId { get; set; }
+
+    private List<BreadcrumbItem> _breadcrumbItems = new();
+    private List<StudentAttendanceRow> _attendanceRecords = new();
+    private DateTime? _selectedDate = DateTime.Today;
+    private bool _hasUnsavedChanges = false;
+    private string _className = "";
+    private string _gradeLevel = "";
+    private string _teacherName = "";
+    private bool _showEditDialog = false;
+    private StudentAttendanceRow? _editingStudent = null;
+
+    private DialogOptions _dialogOptions = new() 
+    { 
+        MaxWidth = MaxWidth.Small, 
+        FullWidth = true,
+        CloseButton = false 
+    };
+
+    private AttendanceStats _stats = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load class info and attendance data
+        await LoadClassInfo();
+        await LoadAttendanceData();
+        UpdateBreadcrumbs();
+    }
+
+    private async Task LoadClassInfo()
+    {
+        // Replace with actual service call
+        _className = "Mathematics 101";
+        _gradeLevel = "10th Grade";
+        _teacherName = "Mr. Johnson";
+    }
+
+    private async Task LoadAttendanceData()
+    {
+        // Replace with actual service call
+        // _attendanceRecords = await AttendanceService.GetAttendanceForDateAsync(ClassId, _selectedDate.Value);
+        CalculateStats();
+    }
+
+    private async Task OnDateChanged(DateTime? newDate)
+    {
+        if (newDate.HasValue)
+        {
+            _selectedDate = newDate;
+            await LoadAttendanceData();
+        }
+    }
+
+    private void EditAttendance(StudentAttendanceRow student)
+    {
+        _editingStudent = student;
+        _showEditDialog = true;
+    }
+
+    private void CloseEditDialog()
+    {
+        _showEditDialog = false;
+        _hasUnsavedChanges = true;
+        CalculateStats();
+    }
+
+    private async Task SaveAttendance()
+    {
+        // Save to database
+        // await AttendanceService.SaveAttendanceAsync(_attendanceRecords, _selectedDate.Value);
+        
+        Snackbar.Add("Attendance saved successfully!", Severity.Success);
+        _hasUnsavedChanges = false;
+    }
+
+    private void CalculateStats()
+    {
+        _stats = new AttendanceStats
+        {
+            Present = _attendanceRecords.Count(r => r.Status == "Present"),
+            Absent = _attendanceRecords.Count(r => r.Status == "Absent"),
+            Late = _attendanceRecords.Count(r => r.Status == "Late"),
+            Excused = _attendanceRecords.Count(r => r.Status == "Excused")
+        };
+    }
+
+    private void UpdateBreadcrumbs()
+    {
+        _breadcrumbItems = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem("Home", href: "/", icon: Icons.Material.Filled.Home),
+            new BreadcrumbItem("My Classes", href: "/"),
+            new BreadcrumbItem(_className, href: null, disabled: true)
+        };
+    }
+
+    private RenderFragment GetStatusIcon(string status) => builder =>
+    {
+        var (icon, color) = status switch
+        {
+            "Present" => (Icons.Material.Filled.CheckCircle, "#22C55E"),
+            "Absent" => (Icons.Material.Filled.Cancel, "#DC2626"),
+            "Late" => (Icons.Material.Filled.Schedule, "#F26522"),
+            "Excused" => (Icons.Material.Filled.Description, "#0066A1"),
+            _ => (Icons.Material.Filled.HelpOutline, "#6B7280")
+        };
+        
+        builder.OpenComponent<MudIcon>(0);
+        builder.AddAttribute(1, "Icon", icon);
+        builder.AddAttribute(2, "Size", Size.Small);
+        builder.AddAttribute(3, "Style", $"color: {color};");
+        builder.CloseComponent();
+    };
+
+    private string GetAtRiskTooltip(StudentAttendanceRow student)
+    {
+        return $"Recent absences (last 10 days): {student.RecentAbsences} days";
+    }
+
+    // Sample models
+    private class StudentAttendanceRow
+    {
+        public string StudentId { get; set; } = "";
+        public string StudentName { get; set; } = "";
+        public string Status { get; set; } = "Present";
+        public string Notes { get; set; } = "";
+        public bool IsAtRisk { get; set; }
+        public int RecentAbsences { get; set; }
+    }
+
+    private class AttendanceStats
+    {
+        public int Present { get; set; }
+        public int Absent { get; set; }
+        public int Late { get; set; }
+        public int Excused { get; set; }
+    }
+}

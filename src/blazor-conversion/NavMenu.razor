@@ -1,0 +1,47 @@
+@using Microsoft.AspNetCore.Components.Authorization
+
+<AuthorizeView>
+    <Authorized>
+        <div class="d-flex gap-2">
+            <!-- My Classes Button -->
+            <MudButton Variant="@GetVariant("/")" 
+                       StartIcon="@Icons.Material.Filled.Book"
+                       Href="/"
+                       Style="@GetButtonStyle("/")"
+                       Class="pa-2">
+                My Classes
+            </MudButton>
+
+            <!-- Reports Button - Admin Only -->
+            <AuthorizeView Roles="AdminIT">
+                <MudButton Variant="@GetVariant("/reports")" 
+                           StartIcon="@Icons.Material.Filled.Description"
+                           Href="/reports"
+                           Style="@GetButtonStyle("/reports")"
+                           Class="pa-2">
+                    Reports & Analytics
+                </MudButton>
+            </AuthorizeView>
+        </div>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+
+    private string CurrentPath => new Uri(NavigationManager.Uri).LocalPath;
+
+    private Variant GetVariant(string path)
+    {
+        return CurrentPath == path ? Variant.Filled : Variant.Text;
+    }
+
+    private string GetButtonStyle(string path)
+    {
+        if (CurrentPath == path)
+        {
+            return "background-color: #003B5C; color: white; border: 2px solid #003B5C; border-radius: 0;";
+        }
+        return "border: 2px solid transparent; border-radius: 0; color: #003B5C;";
+    }
+}

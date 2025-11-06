@@ -1,0 +1,196 @@
+@page "/"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using NOCEAttendance.BlazorApp.Data.Services
+@using NOCEAttendance.BlazorApp.Data.Models
+@inject ClassService ClassService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>My Classes - NOCE iTendance</PageTitle>
+
+<!-- Breadcrumb Navigation -->
+<MudBreadcrumbs Items="_breadcrumbItems" Style="padding: 0; margin-bottom: 16px;">
+    <ItemTemplate Context="item">
+        <MudLink Href="@item.Href" Style="color: #0066A1; font-size: 0.875rem;">
+            @if (item.Icon != null)
+            {
+                <MudIcon Icon="@item.Icon" Size="Size.Small" Class="mr-1" />
+            }
+            @item.Text
+        </MudLink>
+    </ItemTemplate>
+    <SeparatorTemplate>
+        <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" Style="color: #6B7280;" />
+    </SeparatorTemplate>
+</MudBreadcrumbs>
+
+<MudDivider Class="mb-4" />
+
+<!-- Page Header -->
+<div style="border-left: 4px solid #003B5C; padding-left: 16px; margin-bottom: 24px;">
+    <MudText Typo="Typo.h4" Style="color: #003B5C; margin-bottom: 8px;">Class Management</MudText>
+    <MudText Typo="Typo.body2" Style="color: #6B7280;">
+        @(_isAdmin ? "View all classes and attendance records in the system" : "Select a class to mark or edit student attendance records")
+    </MudText>
+</div>
+
+<!-- At-Risk Students Alert -->
+@if (_totalAtRisk > 0)
+{
+    <MudPaper Elevation="0" Class="mb-4" 
+              Style="border: 4px solid #DC2626; background-color: #FEF2F2;">
+        <div class="d-flex align-center gap-2 pa-3" 
+             style="background-color: #DC2626;">
+            <MudIcon Icon="@Icons.Material.Filled.Warning" Style="color: white;" />
+            <MudText Typo="Typo.body2" Style="color: white;">
+                ATTENDANCE ALERT - ACTION REQUIRED
+            </MudText>
+        </div>
+        <div class="pa-4">
+            <MudText Typo="Typo.body1" Style="color: #DC2626;">
+                <strong>@_totalAtRisk student@(_totalAtRisk > 1 ? "s" : "")</strong> across your classes 
+                @(_totalAtRisk > 1 ? "have" : "has") missed 3 or more days in the last 10 days and may require intervention.
+            </MudText>
+            <MudText Typo="Typo.body2" Style="color: #6B7280; margin-top: 8px;">
+                These students are highlighted in red when viewing attendance records. Please review their attendance patterns 
+                and consider reaching out to discuss their absences.
+            </MudText>
+        </div>
+    </MudPaper>
+}
+
+<!-- Classes GridView-Style Table -->
+<MudPaper Elevation="1" Square="true" Style="border: 2px solid #E8F4F8;">
+    <!-- Table Header -->
+    <div class="pa-3" 
+         style="background-color: #F5F5F5; border-bottom: 2px solid #003B5C;">
+        <MudText Typo="Typo.body2" Style="color: #003B5C;">
+            Available Classes (@_classes.Count)
+        </MudText>
+    </div>
+
+    <!-- Table Content -->
+    @if (_loading)
+    {
+        <div class="pa-8 text-center">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        </div>
+    }
+    else if (_classes.Count == 0)
+    {
+        <div class="pa-12 text-center" style="background-color: #F5F5F5;">
+            <MudIcon Icon="@Icons.Material.Filled.Group" 
+                     Style="color: #003B5C; opacity: 0.3; font-size: 4rem;" />
+            <MudText Typo="Typo.h6" Style="color: #003B5C; margin-top: 16px;">
+                No classes assigned to your account
+            </MudText>
+            <MudText Typo="Typo.body2" Style="color: #6B7280; margin-top: 8px;">
+                Please contact the administrator if you believe this is an error.
+            </MudText>
+        </div>
+    }
+    else
+    {
+        <div>
+            @foreach (var (classItem, index) in _classes.Select((c, i) => (c, i)))
+            {
+                <div class="pa-4" 
+                     style="@GetRowStyle(index); border-bottom: 1px solid #E8F4F8;">
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12" md="3">
+                            <MudText Typo="Typo.caption" Style="color: #6B7280;">Class Name</MudText>
+                            <div class="d-flex align-center gap-2">
+                                <MudText Typo="Typo.body1" Style="color: #003B5C;">@classItem.Name</MudText>
+                                @if (classItem.AtRiskCount > 0)
+                                {
+                                    <MudChip Size="Size.Small" 
+                                             Style="background-color: #FEF2F2; border: 2px solid #DC2626; color: #DC2626;">
+                                        <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Small" Class="mr-1" />
+                                        @classItem.AtRiskCount At Risk
+                                    </MudChip>
+                                }
+                            </div>
+                        </MudItem>
+                        <MudItem xs="12" md="3">
+                            <MudText Typo="Typo.caption" Style="color: #6B7280;">Grade Level</MudText>
+                            <MudText Typo="Typo.body1">@classItem.Grade</MudText>
+                        </MudItem>
+                        <MudItem xs="12" md="3">
+                            <MudText Typo="Typo.caption" Style="color: #6B7280;">Instructor</MudText>
+                            <MudText Typo="Typo.body1">@classItem.TeacherName</MudText>
+                        </MudItem>
+                        <MudItem xs="12" md="3" Class="d-flex align-center justify-end gap-2">
+                            <MudPaper Elevation="0" Class="pa-2 text-center" 
+                                      Style="border: 2px solid #E8F4F8;">
+                                <MudText Typo="Typo.caption" Style="color: #6B7280;">Students</MudText>
+                                <MudText Typo="Typo.body1" Style="color: #003B5C;">@classItem.StudentCount</MudText>
+                            </MudPaper>
+                            <MudButton Variant="Variant.Filled"
+                                       EndIcon="@Icons.Material.Filled.ChevronRight"
+                                       Size="Size.Small"
+                                       Style="background-color: #003B5C; color: white; border: 2px solid #003B5C; border-radius: 0;"
+                                       OnClick="@(() => ViewAttendance(classItem.Id))">
+                                View Attendance
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </div>
+            }
+        </div>
+        
+        <!-- Footer -->
+        <div class="pa-3" 
+             style="background-color: #F5F5F5; border-top: 2px solid #E8F4F8;">
+            <MudText Typo="Typo.caption" Style="color: #6B7280;">
+                Total Records: @_classes.Count
+            </MudText>
+        </div>
+    }
+</MudPaper>
+
+@code {
+    private List<BreadcrumbItem> _breadcrumbItems = new()
+    {
+        new BreadcrumbItem("Home", href: "#", icon: Icons.Material.Filled.Home),
+        new BreadcrumbItem("My Classes", href: null, disabled: true)
+    };
+
+    private List<ClassSummary> _classes = new();
+    private bool _loading = true;
+    private bool _isAdmin = false;
+    private int _totalAtRisk = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        _isAdmin = authState.User.IsInRole("AdminIT");
+
+        // Load classes based on user role
+        _classes = await ClassService.GetClassesForUserAsync(authState.User);
+        _totalAtRisk = _classes.Sum(c => c.AtRiskCount);
+        
+        _loading = false;
+    }
+
+    private void ViewAttendance(int classId)
+    {
+        NavigationManager.NavigateTo($"/attendance/{classId}");
+    }
+
+    private string GetRowStyle(int index)
+    {
+        return index % 2 == 1 ? "background-color: #F9FAFB;" : "background-color: white;";
+    }
+
+    // Sample model - replace with your actual model
+    private class ClassSummary
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Grade { get; set; } = "";
+        public string TeacherName { get; set; } = "";
+        public int StudentCount { get; set; }
+        public int AtRiskCount { get; set; }
+    }
+}

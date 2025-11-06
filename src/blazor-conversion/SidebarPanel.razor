@@ -1,0 +1,18 @@
+<!-- Reusable Sidebar Panel Component -->
+<MudPaper Elevation="1" Square="true" Style="border: 2px solid #E8F4F8; background-color: white;">
+    <!-- Panel Header -->
+    <div class="pa-2" style="background-color: #003B5C;">
+        <MudText Typo="Typo.body2" Style="color: white;">@Title</MudText>
+    </div>
+
+    <!-- Panel Content -->
+    @ChildContent
+</MudPaper>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "Panel";
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

@@ -1,0 +1,118 @@
+@using System.Globalization
+
+<MudPaper Elevation="1" Square="true" Style="border: 2px solid #E8F4F8; background-color: white;">
+    <!-- Header -->
+    <div class="d-flex align-center justify-space-between pa-2" 
+         style="background-color: #003B5C;">
+        <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Style="color: white; font-size: 1rem;" />
+        <MudText Typo="Typo.body2" Style="color: white;">Calendar</MudText>
+        <div style="width: 16px;"></div>
+    </div>
+
+    <!-- Month Navigation -->
+    <div class="d-flex align-center justify-space-between pa-2" 
+         style="background-color: #F5F5F5; border-bottom: 2px solid #E8F4F8;">
+        <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" 
+                       Size="Size.Small"
+                       Style="color: #003B5C;"
+                       OnClick="PreviousMonth" />
+        <MudText Typo="Typo.body2" Style="color: #003B5C;">
+            @_currentDate.ToString("MMMM yyyy")
+        </MudText>
+        <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" 
+                       Size="Size.Small"
+                       Style="color: #003B5C;"
+                       OnClick="NextMonth" />
+    </div>
+
+    <!-- Calendar Grid -->
+    <div class="pa-2">
+        <!-- Day Headers -->
+        <MudGrid Spacing="0" Class="mb-1">
+            @foreach (var day in _dayNames)
+            {
+                <MudItem xs="12/7" Class="text-center">
+                    <MudText Typo="Typo.caption" Style="color: #003B5C; font-size: 0.7rem;">
+                        @day
+                    </MudText>
+                </MudItem>
+            }
+        </MudGrid>
+
+        <!-- Calendar Days -->
+        <MudGrid Spacing="0">
+            @for (int i = 0; i < _firstDayOfMonth; i++)
+            {
+                <MudItem xs="12/7" Class="pa-1">
+                    <div style="height: 32px;"></div>
+                </MudItem>
+            }
+
+            @for (int day = 1; day <= _daysInMonth; day++)
+            {
+                var currentDay = day;
+                var isToday = IsToday(currentDay);
+                
+                <MudItem xs="12/7" Class="pa-0">
+                    <MudPaper Elevation="0"
+                              Class="d-flex align-center justify-center cursor-pointer"
+                              Style="@GetDayStyle(isToday)"
+                              @onclick="() => SelectDay(currentDay)">
+                        <MudText Typo="Typo.caption" Style="@(isToday ? "color: white;" : "")">
+                            @currentDay
+                        </MudText>
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
+    </div>
+
+    <!-- Today's Date Footer -->
+    <div class="pa-2 text-center" 
+         style="background-color: #F5F5F5; border-top: 2px solid #E8F4F8;">
+        <MudText Typo="Typo.caption">
+            <span style="color: #6B7280;">Today: </span>
+            <span style="color: #003B5C;">@DateTime.Today.ToShortDateString()</span>
+        </MudText>
+    </div>
+</MudPaper>
+
+@code {
+    private DateTime _currentDate = DateTime.Today;
+    private string[] _dayNames = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+    
+    private int _daysInMonth => DateTime.DaysInMonth(_currentDate.Year, _currentDate.Month);
+    private int _firstDayOfMonth => (int)new DateTime(_currentDate.Year, _currentDate.Month, 1).DayOfWeek;
+
+    private void PreviousMonth()
+    {
+        _currentDate = _currentDate.AddMonths(-1);
+    }
+
+    private void NextMonth()
+    {
+        _currentDate = _currentDate.AddMonths(1);
+    }
+
+    private void SelectDay(int day)
+    {
+        // Handle day selection if needed
+        var selectedDate = new DateTime(_currentDate.Year, _currentDate.Month, day);
+        // You could emit an event or navigate here
+    }
+
+    private bool IsToday(int day)
+    {
+        var date = new DateTime(_currentDate.Year, _currentDate.Month, day);
+        return date.Date == DateTime.Today;
+    }
+
+    private string GetDayStyle(bool isToday)
+    {
+        if (isToday)
+        {
+            return "background-color: #F26522; color: white; height: 32px; margin: 1px; border: 1px solid #F26522;";
+        }
+        return "background-color: white; height: 32px; margin: 1px; border: 1px solid #E8F4F8; hover: background-color: #F5F5F5;";
+    }
+}
