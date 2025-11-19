@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using MudBlazor.Services;
-using NOCEAttendance.BlazorApp.Data;
-using NOCEAttendance.BlazorApp.Data.Services;
-using NOCEAttendance.BlazorApp.Themes;
+using ITendance.BlazorApp.Data;
+using ITendance.BlazorApp.Data.Services;
+using ITendance.BlazorApp.Themes;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace NOCEAttendance.BlazorApp.Data.Models
+namespace ITendance.BlazorApp.Data.Models
 {
     /// <summary>
     /// Represents a class/course in the system

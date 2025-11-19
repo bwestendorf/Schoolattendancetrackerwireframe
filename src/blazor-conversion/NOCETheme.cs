@@ -1,10 +1,10 @@
 using MudBlazor;
 
-namespace NOCEAttendance.BlazorApp.Themes
+namespace ITendance.BlazorApp.Themes
 {
     /// <summary>
-    /// Custom MudBlazor theme for NOCE Attendance System
-    /// Implements NOCE brand colors (Navy, Orange, Light Blue) with traditional .NET/iTendance styling
+    /// Custom MudBlazor theme for ITendance v2.0
+    /// Implements NOCE brand colors (Navy, Orange, Light Blue) with traditional .NET/enterprise styling
     /// </summary>
     public static class NOCETheme
     {

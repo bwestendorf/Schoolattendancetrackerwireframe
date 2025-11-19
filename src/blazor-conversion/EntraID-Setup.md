@@ -1,7 +1,7 @@
 # Microsoft EntraID (Azure AD) Setup Guide
 
 ## Overview
-This guide walks you through configuring Microsoft EntraID authentication for the NOCE Attendance System.
+This guide walks you through configuring Microsoft EntraID authentication for ITendance v2.0.
 
 ## Prerequisites
 - Azure subscription with admin access
@@ -18,7 +18,7 @@ This guide walks you through configuring Microsoft EntraID authentication for th
 ### 1.2 Create New App Registration
 1. Click **+ New registration**
 2. Fill in the details:
-   - **Name**: `NOCE iTendance Attendance System`
+   - **Name**: `ITendance v2.0 - NOCE Attendance System`
    - **Supported account types**: `Accounts in this organizational directory only (NOCE only - Single tenant)`
    - **Redirect URI**: 
      - Platform: `Web`
@@ -112,7 +112,7 @@ Click **Save** at the bottom
 
 ### 6.1 Assign Via Enterprise Applications
 1. Go to **Azure Active Directory** → **Enterprise applications**
-2. Find your app: `NOCE iTendance Attendance System`
+2. Find your app: `ITendance v2.0 - NOCE Attendance System`
 3. Go to **Users and groups**
 4. Click **+ Add user/group**
 5. Select users and assign appropriate roles:

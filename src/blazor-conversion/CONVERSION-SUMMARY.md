@@ -1,14 +1,14 @@
-# NOCE Attendance System - Blazor Conversion Summary
+# ITendance v2.0 - Blazor Conversion Summary
 
 ## Project Overview
 
-This document provides a complete guide for converting your React-based NOCE Attendance System to Blazor with MudBlazor, maintaining the traditional .NET/iTendance enterprise design aesthetic.
+This document provides a complete guide for converting your React-based NOCE Attendance System to ITendance v2.0, a Blazor application with MudBlazor, maintaining the traditional .NET enterprise design aesthetic.
 
 ## What's Included
 
 ### 1. **Complete Project Structure**
 ```
-NOCEAttendance.BlazorApp/
+ITendance.BlazorApp/
 ├── README.md                    ✅ Project setup guide
 ├── Program.cs                   ✅ Application configuration with EntraID
 ├── appsettings.json            ✅ Configuration template
@@ -362,4 +362,4 @@ For questions during implementation:
 
 ---
 
-**Good luck with your Blazor conversion!** The provided code is production-ready and follows .NET best practices. With careful implementation following this guide, you'll have a robust, maintainable attendance system that perfectly matches the iTendance design aesthetic.
+**Good luck with your Blazor conversion!** The provided code is production-ready and follows .NET best practices. With careful implementation following this guide, you'll have a robust, maintainable ITendance v2.0 attendance system that perfectly matches the enterprise design aesthetic.

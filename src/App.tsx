@@ -3,10 +3,11 @@ import { LoginPage } from './components/LoginPage';
 import { AppLayout } from './components/AppLayout';
 import { Dashboard } from './components/Dashboard';
 import { ClassAttendance } from './components/ClassAttendance';
+import { ClassAttendanceInline } from './components/ClassAttendanceInline';
 import { AdminReports } from './components/AdminReports';
 import { User } from './types';
 
-type AppView = 'login' | 'dashboard' | 'class-attendance' | 'reports';
+type AppView = 'login' | 'dashboard' | 'class-attendance' | 'class-attendance-inline' | 'reports';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<AppView>('login');
@@ -26,7 +27,8 @@ export default function App() {
 
   const handleSelectClass = (classId: string) => {
     setSelectedClassId(classId);
-    setCurrentView('class-attendance');
+    // Use inline version by default
+    setCurrentView('class-attendance-inline');
   };
 
   const handleBackToDashboard = () => {
@@ -54,6 +56,13 @@ export default function App() {
       )}
       {currentView === 'class-attendance' && selectedClassId && (
         <ClassAttendance
+          user={user}
+          classId={selectedClassId}
+          onBack={handleBackToDashboard}
+        />
+      )}
+      {currentView === 'class-attendance-inline' && selectedClassId && (
+        <ClassAttendanceInline
           user={user}
           classId={selectedClassId}
           onBack={handleBackToDashboard}

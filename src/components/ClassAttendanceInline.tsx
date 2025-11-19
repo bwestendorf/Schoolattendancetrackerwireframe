@@ -1,30 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from './ui/table';
-import { Badge } from './ui/badge';
-import { User, AttendanceRecord } from '../types';
+import { User } from '../types';
 import { mockClasses, mockStudents, mockAttendanceRecords } from '../lib/mockData';
-import { ArrowLeft, Calendar, Save, CheckCircle, XCircle, Clock, FileCheck, AlertTriangle, Home, BookOpen } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './ui/select';
-import { Textarea } from './ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
-import { Label } from './ui/label';
+import { ArrowLeft, Calendar, Save, CheckCircle, XCircle, Clock, FileCheck, AlertTriangle, Home } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { Separator } from './ui/separator';
+import { Checkbox } from './ui/checkbox';
+import { Input } from './ui/input';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -34,7 +16,7 @@ import {
   BreadcrumbSeparator,
 } from './ui/breadcrumb';
 
-interface ClassAttendanceProps {
+interface ClassAttendanceInlineProps {
   user: User;
   classId: string;
   onBack: () => void;
@@ -48,12 +30,11 @@ interface StudentAttendance {
   notes: string;
 }
 
-export function ClassAttendance({ user, classId, onBack }: ClassAttendanceProps) {
+export function ClassAttendanceInline({ user, classId, onBack }: ClassAttendanceInlineProps) {
   const classData = mockClasses.find((c) => c.id === classId);
   const students = mockStudents[classId] || [];
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [attendance, setAttendance] = useState<Record<string, StudentAttendance>>({});
-  const [editingStudent, setEditingStudent] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   useEffect(() => {
@@ -73,13 +54,23 @@ export function ClassAttendance({ user, classId, onBack }: ClassAttendanceProps)
     setHasUnsavedChanges(false);
   }, [selectedDate, classId, students]);
 
-  const updateAttendance = (studentId: string, status: AttendanceStatus, notes?: string) => {
+  const updateStatus = (studentId: string, newStatus: AttendanceStatus) => {
     setAttendance((prev) => ({
       ...prev,
       [studentId]: {
-        studentId,
-        status,
-        notes: notes !== undefined ? notes : prev[studentId]?.notes || '',
+        ...prev[studentId],
+        status: newStatus,
+      },
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const updateNotes = (studentId: string, notes: string) => {
+    setAttendance((prev) => ({
+      ...prev,
+      [studentId]: {
+        ...prev[studentId],
+        notes,
       },
     }));
     setHasUnsavedChanges(true);
@@ -93,30 +84,16 @@ export function ClassAttendance({ user, classId, onBack }: ClassAttendanceProps)
     alert('Attendance saved successfully!');
   };
 
-  const getStatusIcon = (status: AttendanceStatus) => {
-    switch (status) {
-      case 'present':
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'absent':
-        return <XCircle className="h-4 w-4 text-red-600" />;
-      case 'late':
-        return <Clock className="h-4 w-4 text-orange-600" />;
-      case 'excused':
-        return <FileCheck className="h-4 w-4 text-blue-600" />;
-    }
-  };
-
-  const getStatusBadgeVariant = (status: AttendanceStatus): "default" | "secondary" | "destructive" | "outline" => {
-    switch (status) {
-      case 'present':
-        return 'default';
-      case 'absent':
-        return 'destructive';
-      case 'late':
-        return 'secondary';
-      case 'excused':
-        return 'outline';
-    }
+  const markAllAs = (status: AttendanceStatus) => {
+    const newAttendance: Record<string, StudentAttendance> = {};
+    students.forEach((student) => {
+      newAttendance[student.id] = {
+        ...attendance[student.id],
+        status,
+      };
+    });
+    setAttendance(newAttendance);
+    setHasUnsavedChanges(true);
   };
 
   // Calculate recent absence count for each student (last 10 days)
@@ -147,19 +124,6 @@ export function ClassAttendance({ user, classId, onBack }: ClassAttendanceProps)
     absent: Object.values(attendance).filter((a) => a.status === 'absent').length,
     late: Object.values(attendance).filter((a) => a.status === 'late').length,
     excused: Object.values(attendance).filter((a) => a.status === 'excused').length,
-  };
-
-  const markAllAs = (status: AttendanceStatus) => {
-    const newAttendance: Record<string, StudentAttendance> = {};
-    students.forEach((student) => {
-      newAttendance[student.id] = {
-        studentId: student.id,
-        status,
-        notes: '',
-      };
-    });
-    setAttendance(newAttendance);
-    setHasUnsavedChanges(true);
   };
 
   if (!classData) {
@@ -314,10 +278,10 @@ export function ClassAttendance({ user, classId, onBack }: ClassAttendanceProps)
         </div>
       </div>
 
-      {/* Attendance Table - GridView Style */}
+      {/* Attendance Table - Inline Editing */}
       <div className="border-2" style={{ borderColor: '#E8F4F8' }}>
         <div className="bg-gray-50 border-b-2 px-4 py-3" style={{ borderBottomColor: '#003B5C' }}>
-          <h3 className="text-sm" style={{ color: '#003B5C' }}>Student Attendance Records</h3>
+          <h3 className="text-sm" style={{ color: '#003B5C' }}>Student Attendance Records - Click to Mark</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -325,9 +289,11 @@ export function ClassAttendance({ user, classId, onBack }: ClassAttendanceProps)
               <tr>
                 <th className="px-4 py-3 text-left text-xs border-r" style={{ color: '#003B5C' }}>Student ID</th>
                 <th className="px-4 py-3 text-left text-xs border-r" style={{ color: '#003B5C' }}>Student Name</th>
-                <th className="px-4 py-3 text-left text-xs border-r" style={{ color: '#003B5C' }}>Status</th>
-                <th className="px-4 py-3 text-left text-xs border-r" style={{ color: '#003B5C' }}>Notes</th>
-                <th className="px-4 py-3 text-right text-xs" style={{ color: '#003B5C' }}>Actions</th>
+                <th className="px-4 py-3 text-center text-xs border-r" style={{ color: '#003B5C' }}>Present</th>
+                <th className="px-4 py-3 text-center text-xs border-r" style={{ color: '#003B5C' }}>Absent</th>
+                <th className="px-4 py-3 text-center text-xs border-r" style={{ color: '#003B5C' }}>Late</th>
+                <th className="px-4 py-3 text-center text-xs border-r" style={{ color: '#003B5C' }}>Excused</th>
+                <th className="px-4 py-3 text-left text-xs" style={{ color: '#003B5C' }}>Notes</th>
               </tr>
             </thead>
             <tbody>
@@ -369,27 +335,54 @@ export function ClassAttendance({ user, classId, onBack }: ClassAttendanceProps)
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 border-r">
-                      <div className="flex items-center gap-2">
-                        {getStatusIcon(studentAttendance?.status || 'present')}
-                        <span className="text-sm">{studentAttendance?.status || 'present'}</span>
+                    <td className="px-4 py-3 border-r text-center">
+                      <div className="flex justify-center">
+                        <Checkbox 
+                          checked={studentAttendance?.status === 'present'}
+                          onCheckedChange={() => updateStatus(student.id, 'present')}
+                          className="border-2 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+                        />
                       </div>
                     </td>
-                    <td className="px-4 py-3 border-r">
-                      <span className="text-sm text-muted-foreground">
-                        {studentAttendance?.notes || '-'}
-                      </span>
+                    <td className="px-4 py-3 border-r text-center">
+                      <div className="flex justify-center">
+                        <Checkbox 
+                          checked={studentAttendance?.status === 'absent'}
+                          onCheckedChange={() => updateStatus(student.id, 'absent')}
+                          className="border-2 data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600"
+                        />
+                      </div>
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="border-2"
-                        style={{ borderColor: '#003B5C', color: '#003B5C' }}
-                        onClick={() => setEditingStudent(student.id)}
-                      >
-                        Edit
-                      </Button>
+                    <td className="px-4 py-3 border-r text-center">
+                      <div className="flex justify-center">
+                        <Checkbox 
+                          checked={studentAttendance?.status === 'late'}
+                          onCheckedChange={() => updateStatus(student.id, 'late')}
+                          style={{ 
+                            borderWidth: '2px',
+                          }}
+                          className="border-2 data-[state=checked]:border-orange-600"
+                          data-checked={studentAttendance?.status === 'late'}
+                        />
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 border-r text-center">
+                      <div className="flex justify-center">
+                        <Checkbox 
+                          checked={studentAttendance?.status === 'excused'}
+                          onCheckedChange={() => updateStatus(student.id, 'excused')}
+                          className="border-2 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                        />
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Input
+                        value={studentAttendance?.notes || ''}
+                        onChange={(e) => updateNotes(student.id, e.target.value)}
+                        placeholder="Add note..."
+                        className="text-sm border-2"
+                        style={{ borderColor: '#E8F4F8' }}
+                      />
                     </td>
                   </tr>
                 );
@@ -397,70 +390,17 @@ export function ClassAttendance({ user, classId, onBack }: ClassAttendanceProps)
             </tbody>
           </table>
         </div>
-        <div className="bg-gray-50 border-t-2 px-4 py-3 text-sm text-muted-foreground" style={{ borderTopColor: '#E8F4F8' }}>
-          Total Records: {students.length}
+        <div className="bg-gray-50 border-t-2 px-4 py-3" style={{ borderTopColor: '#E8F4F8' }}>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-muted-foreground">Total Records: {students.length}</span>
+            {hasUnsavedChanges && (
+              <span className="text-sm" style={{ color: '#F26522' }}>
+                Unsaved changes - Click Save button above
+              </span>
+            )}
+          </div>
         </div>
       </div>
-
-      {/* Edit Dialog */}
-      <Dialog open={editingStudent !== null} onOpenChange={(open) => !open && setEditingStudent(null)}>
-        <DialogContent className="border-2" style={{ borderColor: '#003B5C' }}>
-          <DialogHeader className="border-b-2 pb-4" style={{ borderBottomColor: '#E8F4F8' }}>
-            <DialogTitle style={{ color: '#003B5C' }}>Edit Attendance Record</DialogTitle>
-            <DialogDescription>
-              Update attendance status for {students.find((s) => s.id === editingStudent)?.name}
-            </DialogDescription>
-          </DialogHeader>
-          {editingStudent && (
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label>Attendance Status *</Label>
-                <Select
-                  value={attendance[editingStudent]?.status || 'present'}
-                  onValueChange={(value) => updateAttendance(editingStudent, value as AttendanceStatus)}
-                >
-                  <SelectTrigger className="border-2" style={{ borderColor: '#E8F4F8' }}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="present">Present</SelectItem>
-                    <SelectItem value="absent">Absent</SelectItem>
-                    <SelectItem value="late">Late</SelectItem>
-                    <SelectItem value="excused">Excused</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Additional Notes</Label>
-                <Textarea
-                  value={attendance[editingStudent]?.notes || ''}
-                  onChange={(e) =>
-                    updateAttendance(
-                      editingStudent,
-                      attendance[editingStudent]?.status || 'present',
-                      e.target.value
-                    )
-                  }
-                  placeholder="Enter any additional notes or comments..."
-                  rows={3}
-                  className="border-2"
-                  style={{ borderColor: '#E8F4F8' }}
-                />
-              </div>
-            </div>
-          )}
-          <DialogFooter className="border-t-2 pt-4" style={{ borderTopColor: '#E8F4F8' }}>
-            <Button 
-              variant="outline" 
-              onClick={() => setEditingStudent(null)}
-              className="border-2"
-              style={{ borderColor: '#003B5C', color: '#003B5C' }}
-            >
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

@@ -1,7 +1,7 @@
-# NOCE Attendance System - Blazor + MudBlazor Conversion Guide
+# ITendance v2.0 - Blazor + MudBlazor Conversion Guide
 
 ## Overview
-This guide will help you convert the React-based NOCE Attendance System to a Blazor application using MudBlazor components while maintaining the traditional .NET/iTendance design aesthetic.
+This guide will help you convert the React-based NOCE Attendance System to ITendance v2.0, a Blazor application using MudBlazor components while maintaining the traditional .NET enterprise design aesthetic.
 
 ## Prerequisites
 
@@ -23,7 +23,7 @@ This guide will help you convert the React-based NOCE Attendance System to a Bla
 ## Project Structure
 
 ```
-NOCEAttendance.BlazorApp/
+ITendance.BlazorApp/
 ├── Program.cs                          # Application entry point & configuration
 ├── appsettings.json                    # Configuration including EntraID
 ├── Pages/
@@ -61,15 +61,15 @@ NOCEAttendance.BlazorApp/
 **Using Visual Studio:**
 1. File → New → Project
 2. Select "Blazor Web App" template
-3. Name: `NOCEAttendance.BlazorApp`
+3. Name: `ITendance.BlazorApp`
 4. Framework: .NET 8.0
 5. Authentication Type: Microsoft Identity Platform
 6. Configure for HTTPS
 
 **Using .NET CLI:**
 ```bash
-dotnet new blazor -n NOCEAttendance.BlazorApp -au IndividualB2C
-cd NOCEAttendance.BlazorApp
+dotnet new blazor -n ITendance.BlazorApp -au IndividualB2C
+cd ITendance.BlazorApp
 dotnet add package MudBlazor
 ```
 
@@ -147,7 +147,7 @@ See individual `.razor` files for complete component implementations.
 3. **Configure web.config** (auto-generated, but verify):
    ```xml
    <aspNetCore processPath="dotnet" 
-               arguments=".\NOCEAttendance.BlazorApp.dll" 
+               arguments=".\ITendance.BlazorApp.dll" 
                stdoutLogEnabled="false" 
                stdoutLogFile=".\logs\stdout" 
                hostingModel="inprocess" />
@@ -158,7 +158,7 @@ See individual `.razor` files for complete component implementations.
 1. **Update connection string** in `appsettings.json`:
    ```json
    "ConnectionStrings": {
-     "DefaultConnection": "Server=YOUR_SERVER;Database=NOCEAttendance;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"
+     "DefaultConnection": "Server=YOUR_SERVER;Database=ITendance;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"
    }
    ```
 

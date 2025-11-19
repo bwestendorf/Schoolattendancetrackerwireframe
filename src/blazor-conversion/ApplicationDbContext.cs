@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using NOCEAttendance.BlazorApp.Data.Models;
+using ITendance.BlazorApp.Data.Models;
 
-namespace NOCEAttendance.BlazorApp.Data
+namespace ITendance.BlazorApp.Data
 {
     /// <summary>
     /// Database context for the NOCE Attendance application
