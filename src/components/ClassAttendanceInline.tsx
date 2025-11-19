@@ -278,120 +278,131 @@ export function ClassAttendanceInline({ user, classId, onBack }: ClassAttendance
         </div>
       </div>
 
-      {/* Attendance Table - Inline Editing */}
+      {/* Attendance Cards - Mobile First Design */}
       <div className="border-2" style={{ borderColor: '#E8F4F8' }}>
         <div className="bg-gray-50 border-b-2 px-4 py-3" style={{ borderBottomColor: '#003B5C' }}>
-          <h3 className="text-sm" style={{ color: '#003B5C' }}>Student Attendance Records - Click to Mark</h3>
+          <h3 className="text-sm" style={{ color: '#003B5C' }}>Student Attendance Records</h3>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-100 border-b-2" style={{ borderBottomColor: '#003B5C' }}>
-              <tr>
-                <th className="px-4 py-3 text-left text-xs border-r" style={{ color: '#003B5C' }}>Student ID</th>
-                <th className="px-4 py-3 text-left text-xs border-r" style={{ color: '#003B5C' }}>Student Name</th>
-                <th className="px-4 py-3 text-center text-xs border-r" style={{ color: '#003B5C' }}>Present</th>
-                <th className="px-4 py-3 text-center text-xs border-r" style={{ color: '#003B5C' }}>Absent</th>
-                <th className="px-4 py-3 text-center text-xs border-r" style={{ color: '#003B5C' }}>Late</th>
-                <th className="px-4 py-3 text-center text-xs border-r" style={{ color: '#003B5C' }}>Excused</th>
-                <th className="px-4 py-3 text-left text-xs" style={{ color: '#003B5C' }}>Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              {students.map((student, index) => {
-                const studentAttendance = attendance[student.id];
-                const recentAbsences = getRecentAbsences(student.id);
-                const hasMultipleAbsences = recentAbsences.count >= 3;
-                
-                return (
-                  <tr 
-                    key={student.id} 
-                    className={`border-b ${index % 2 === 1 ? 'bg-gray-50' : 'bg-white'} ${hasMultipleAbsences ? 'bg-red-50' : ''}`}
+        <div className="divide-y-2" style={{ borderColor: '#E8F4F8' }}>
+          {students.map((student) => {
+            const studentAttendance = attendance[student.id];
+            const recentAbsences = getRecentAbsences(student.id);
+            const hasMultipleAbsences = recentAbsences.count >= 3;
+            
+            return (
+              <div 
+                key={student.id}
+                className={`p-4 ${hasMultipleAbsences ? 'bg-red-50' : 'bg-white'}`}
+              >
+                {/* Student Info */}
+                <div className="mb-3">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <div>
+                      <p className="text-sm" style={{ color: '#003B5C' }}>{student.name}</p>
+                      <p className="text-xs text-muted-foreground">ID: {student.studentId}</p>
+                    </div>
+                    {hasMultipleAbsences && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex items-center gap-1 border-2 border-red-600 px-2 py-1 shrink-0">
+                              <AlertTriangle className="h-3 w-3 text-red-600" />
+                              <span className="text-xs text-red-600">{recentAbsences.count}</span>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <div className="space-y-1">
+                              <p>Recent absences (last 10 days):</p>
+                              <ul className="text-sm space-y-0.5">
+                                {recentAbsences.dates.map((date) => (
+                                  <li key={date}>• {new Date(date).toLocaleDateString()}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
+                </div>
+
+                {/* Status Buttons - Large Touch Targets */}
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                  <Button
+                    variant={studentAttendance?.status === 'present' ? 'default' : 'outline'}
+                    size="lg"
+                    className="border-2 w-full h-12"
+                    style={
+                      studentAttendance?.status === 'present'
+                        ? { backgroundColor: '#22c55e', borderColor: '#22c55e', color: 'white' }
+                        : { borderColor: '#22c55e', color: '#22c55e' }
+                    }
+                    onClick={() => updateStatus(student.id, 'present')}
                   >
-                    <td className="px-4 py-3 border-r text-sm">{student.studentId}</td>
-                    <td className="px-4 py-3 border-r">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">{student.name}</span>
-                        {hasMultipleAbsences && (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="flex items-center gap-1 border-2 border-red-600 px-2 py-1">
-                                  <AlertTriangle className="h-3 w-3 text-red-600" />
-                                  <span className="text-xs text-red-600">{recentAbsences.count} Absences</span>
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <div className="space-y-1">
-                                  <p>Recent absences (last 10 days):</p>
-                                  <ul className="text-sm space-y-0.5">
-                                    {recentAbsences.dates.map((date) => (
-                                      <li key={date}>• {new Date(date).toLocaleDateString()}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 border-r text-center">
-                      <div className="flex justify-center">
-                        <Checkbox 
-                          checked={studentAttendance?.status === 'present'}
-                          onCheckedChange={() => updateStatus(student.id, 'present')}
-                          className="border-2 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
-                        />
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 border-r text-center">
-                      <div className="flex justify-center">
-                        <Checkbox 
-                          checked={studentAttendance?.status === 'absent'}
-                          onCheckedChange={() => updateStatus(student.id, 'absent')}
-                          className="border-2 data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600"
-                        />
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 border-r text-center">
-                      <div className="flex justify-center">
-                        <Checkbox 
-                          checked={studentAttendance?.status === 'late'}
-                          onCheckedChange={() => updateStatus(student.id, 'late')}
-                          style={{ 
-                            borderWidth: '2px',
-                          }}
-                          className="border-2 data-[state=checked]:border-orange-600"
-                          data-checked={studentAttendance?.status === 'late'}
-                        />
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 border-r text-center">
-                      <div className="flex justify-center">
-                        <Checkbox 
-                          checked={studentAttendance?.status === 'excused'}
-                          onCheckedChange={() => updateStatus(student.id, 'excused')}
-                          className="border-2 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                        />
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Input
-                        value={studentAttendance?.notes || ''}
-                        onChange={(e) => updateNotes(student.id, e.target.value)}
-                        placeholder="Add note..."
-                        className="text-sm border-2"
-                        style={{ borderColor: '#E8F4F8' }}
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    <CheckCircle className="h-5 w-5 mr-2" />
+                    Present
+                  </Button>
+                  <Button
+                    variant={studentAttendance?.status === 'absent' ? 'default' : 'outline'}
+                    size="lg"
+                    className="border-2 w-full h-12"
+                    style={
+                      studentAttendance?.status === 'absent'
+                        ? { backgroundColor: '#dc2626', borderColor: '#dc2626', color: 'white' }
+                        : { borderColor: '#dc2626', color: '#dc2626' }
+                    }
+                    onClick={() => updateStatus(student.id, 'absent')}
+                  >
+                    <XCircle className="h-5 w-5 mr-2" />
+                    Absent
+                  </Button>
+                  <Button
+                    variant={studentAttendance?.status === 'late' ? 'default' : 'outline'}
+                    size="lg"
+                    className="border-2 w-full h-12"
+                    style={
+                      studentAttendance?.status === 'late'
+                        ? { backgroundColor: '#F26522', borderColor: '#F26522', color: 'white' }
+                        : { borderColor: '#F26522', color: '#F26522' }
+                    }
+                    onClick={() => updateStatus(student.id, 'late')}
+                  >
+                    <Clock className="h-5 w-5 mr-2" />
+                    Late
+                  </Button>
+                  <Button
+                    variant={studentAttendance?.status === 'excused' ? 'default' : 'outline'}
+                    size="lg"
+                    className="border-2 w-full h-12"
+                    style={
+                      studentAttendance?.status === 'excused'
+                        ? { backgroundColor: '#0066A1', borderColor: '#0066A1', color: 'white' }
+                        : { borderColor: '#0066A1', color: '#0066A1' }
+                    }
+                    onClick={() => updateStatus(student.id, 'excused')}
+                  >
+                    <FileCheck className="h-5 w-5 mr-2" />
+                    Excused
+                  </Button>
+                </div>
+
+                {/* Notes Field */}
+                <div>
+                  <label className="text-xs text-muted-foreground block mb-1">Notes (optional)</label>
+                  <Input
+                    value={studentAttendance?.notes || ''}
+                    onChange={(e) => updateNotes(student.id, e.target.value)}
+                    placeholder="Add note..."
+                    className="text-sm border-2 w-full"
+                    style={{ borderColor: '#E8F4F8' }}
+                  />
+                </div>
+              </div>
+            );
+          })}
         </div>
         <div className="bg-gray-50 border-t-2 px-4 py-3" style={{ borderTopColor: '#E8F4F8' }}>
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
             <span className="text-sm text-muted-foreground">Total Records: {students.length}</span>
             {hasUnsavedChanges && (
               <span className="text-sm" style={{ color: '#F26522' }}>
