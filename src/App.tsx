@@ -5,9 +5,10 @@ import { Dashboard } from './components/Dashboard';
 import { ClassAttendance } from './components/ClassAttendance';
 import { ClassAttendanceInline } from './components/ClassAttendanceInline';
 import { AdminReports } from './components/AdminReports';
+import { DepartmentalDashboard } from './components/DepartmentalDashboard';
 import { User } from './types';
 
-type AppView = 'login' | 'dashboard' | 'class-attendance' | 'class-attendance-inline' | 'reports';
+type AppView = 'login' | 'dashboard' | 'class-attendance' | 'class-attendance-inline' | 'reports' | 'departmental';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<AppView>('login');
@@ -36,7 +37,7 @@ export default function App() {
     setCurrentView('dashboard');
   };
 
-  const handleViewChange = (view: 'dashboard' | 'reports') => {
+  const handleViewChange = (view: 'dashboard' | 'reports' | 'departmental') => {
     setCurrentView(view);
   };
 
@@ -69,6 +70,7 @@ export default function App() {
         />
       )}
       {currentView === 'reports' && user.role === 'admin-it' && <AdminReports />}
+      {currentView === 'departmental' && user.role === 'departmental' && <DepartmentalDashboard user={user} />}
     </AppLayout>
   );
 }

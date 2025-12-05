@@ -17,8 +17,8 @@ import {
   TableHeader,
   TableRow,
 } from './ui/table';
-import { mockClasses, getAtRiskStudents, mockStudents } from '../lib/mockData';
-import { BarChart, Download, TrendingUp, Users, Calendar, Home, FileText, AlertTriangle } from 'lucide-react';
+import { mockClasses, getAtRiskStudents, mockStudents, mockAuditLogs, mockAttendanceRecords, mockTerms } from '../lib/mockData';
+import { BarChart, Download, TrendingUp, Users, Calendar, Home, FileText, AlertTriangle, Shield } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import { Label } from './ui/label';
@@ -318,6 +318,14 @@ export function AdminReports() {
               >
                 Student Reports
               </TabsTrigger>
+              <TabsTrigger 
+                value="audit"
+                className="data-[state=active]:bg-white data-[state=active]:border-2"
+                style={{ borderColor: '#003B5C' }}
+              >
+                <Shield className="h-4 w-4 mr-2" />
+                Audit Logs
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -467,6 +475,39 @@ export function AdminReports() {
               </div>
               <div className="bg-gray-50 border-t-2 px-4 py-3 text-sm text-muted-foreground" style={{ borderTopColor: '#E8F4F8' }}>
                 Total Records: {studentReports.length}
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="audit" className="p-4">
+            <div className="border-2" style={{ borderColor: '#E8F4F8' }}>
+              <div className="bg-gray-100 border-b-2 px-4 py-3" style={{ borderBottomColor: '#003B5C' }}>
+                <h4 className="text-sm" style={{ color: '#003B5C' }}>Audit Logs Overview</h4>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-100 border-b-2" style={{ borderBottomColor: '#003B5C' }}>
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs border-r" style={{ color: '#003B5C' }}>Timestamp</th>
+                      <th className="px-4 py-3 text-left text-xs border-r" style={{ color: '#003B5C' }}>User</th>
+                      <th className="px-4 py-3 text-left text-xs border-r" style={{ color: '#003B5C' }}>Action</th>
+                      <th className="px-4 py-3 text-left text-xs border-r" style={{ color: '#003B5C' }}>Details</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {mockAuditLogs.map((log, index) => (
+                      <tr key={log.id} className={`border-b ${index % 2 === 1 ? 'bg-gray-50' : 'bg-white'}`}>
+                        <td className="px-4 py-3 border-r text-sm">{new Date(log.timestamp).toLocaleString()}</td>
+                        <td className="px-4 py-3 border-r text-sm">{log.userName}</td>
+                        <td className="px-4 py-3 border-r text-sm">{log.action}</td>
+                        <td className="px-4 py-3 text-sm">{log.changes}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="bg-gray-50 border-t-2 px-4 py-3 text-sm text-muted-foreground" style={{ borderTopColor: '#E8F4F8' }}>
+                Total Records: {mockAuditLogs.length}
               </div>
             </div>
           </TabsContent>
