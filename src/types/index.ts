@@ -49,7 +49,7 @@ export interface AttendanceRecord {
   classId: string;
   crn: string;
   date: string;
-  status: 'present' | 'absent' | 'late' | 'excused';
+  status: 'present' | 'absent';
   notes?: string;
   markedBy: string;
   markedByRole: 'instructor' | 'substitute'; // Distinguish between instructor of record and substitute
@@ -60,8 +60,6 @@ export interface AttendanceStats {
   totalStudents: number;
   present: number;
   absent: number;
-  late: number;
-  excused: number;
   attendanceRate: number;
 }
 

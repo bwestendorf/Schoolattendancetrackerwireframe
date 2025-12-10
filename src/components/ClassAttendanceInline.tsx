@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/button';
 import { User } from '../types';
 import { mockClasses, mockStudents, mockAttendanceRecords, getConsecutiveAbsences, mockSubstituteAssignments } from '../lib/mockData';
-import { ArrowLeft, Calendar, Save, CheckCircle, XCircle, Clock, FileCheck, AlertTriangle, Home, Printer, Eye, EyeOff, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Calendar, Save, CheckCircle, XCircle, AlertTriangle, Home, Printer, Eye, EyeOff, Lightbulb } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { Separator } from './ui/separator';
 import { Switch } from './ui/switch';
@@ -29,7 +29,7 @@ interface ClassAttendanceInlineProps {
   onBack: () => void;
 }
 
-type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
+type AttendanceStatus = 'present' | 'absent';
 type ViewMode = 'daily' | 'weekly' | 'full';
 
 interface StudentAttendance {
@@ -173,8 +173,6 @@ export function ClassAttendanceInline({ user, classId, onBack }: ClassAttendance
   const stats = {
     present: Object.values(attendance).filter((a) => a.status === 'present').length,
     absent: Object.values(attendance).filter((a) => a.status === 'absent').length,
-    late: Object.values(attendance).filter((a) => a.status === 'late').length,
-    excused: Object.values(attendance).filter((a) => a.status === 'excused').length,
   };
 
   if (!classData) {
@@ -372,20 +370,6 @@ export function ClassAttendanceInline({ user, classId, onBack }: ClassAttendance
                 {stats.absent}
               </p>
             </div>
-
-            <div className="border-2 p-4 text-center" style={{ borderColor: '#E8F4F8', borderLeftColor: '#F26522', borderLeftWidth: '4px' }}>
-              <label className="text-xs text-muted-foreground block">Late</label>
-              <p className="text-2xl" style={{ color: '#F26522' }} aria-label={`${stats.late} students late`}>
-                {stats.late}
-              </p>
-            </div>
-
-            <div className="border-2 p-4 text-center" style={{ borderColor: '#E8F4F8', borderLeftColor: '#0066A1', borderLeftWidth: '4px' }}>
-              <label className="text-xs text-muted-foreground block">Excused</label>
-              <p className="text-2xl" style={{ color: '#0066A1' }} aria-label={`${stats.excused} students excused`}>
-                {stats.excused}
-              </p>
-            </div>
           </div>
         </div>
       </div>
@@ -440,28 +424,6 @@ export function ClassAttendanceInline({ user, classId, onBack }: ClassAttendance
             >
               <XCircle className="h-4 w-4 mr-1" />
               All Absent
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-2 w-full"
-              style={{ borderColor: '#F26522', color: '#F26522' }}
-              onClick={() => markAllAs('late')}
-              aria-label="Mark all students as late"
-            >
-              <Clock className="h-4 w-4 mr-1" />
-              All Late
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-2 w-full"
-              style={{ borderColor: '#0066A1', color: '#0066A1' }}
-              onClick={() => markAllAs('excused')}
-              aria-label="Mark all students as excused"
-            >
-              <FileCheck className="h-4 w-4 mr-1" />
-              All Excused
             </Button>
           </div>
         </div>
@@ -577,38 +539,6 @@ export function ClassAttendanceInline({ user, classId, onBack }: ClassAttendance
                       <XCircle className="h-5 w-5 mr-2" aria-hidden="true" />
                       Absent
                     </Button>
-                    <Button
-                      variant={studentAttendance?.status === 'late' ? 'default' : 'outline'}
-                      size="lg"
-                      className="border-2 w-full h-12"
-                      style={
-                        studentAttendance?.status === 'late'
-                          ? { backgroundColor: '#F26522', borderColor: '#F26522', color: 'white' }
-                          : { borderColor: '#F26522', color: '#F26522' }
-                      }
-                      onClick={() => updateStatus(student.id, 'late')}
-                      aria-label={`Mark ${student.name} as late`}
-                      aria-pressed={studentAttendance?.status === 'late'}
-                    >
-                      <Clock className="h-5 w-5 mr-2" aria-hidden="true" />
-                      Late
-                    </Button>
-                    <Button
-                      variant={studentAttendance?.status === 'excused' ? 'default' : 'outline'}
-                      size="lg"
-                      className="border-2 w-full h-12"
-                      style={
-                        studentAttendance?.status === 'excused'
-                          ? { backgroundColor: '#0066A1', borderColor: '#0066A1', color: 'white' }
-                          : { borderColor: '#0066A1', color: '#0066A1' }
-                      }
-                      onClick={() => updateStatus(student.id, 'excused')}
-                      aria-label={`Mark ${student.name} as excused`}
-                      aria-pressed={studentAttendance?.status === 'excused'}
-                    >
-                      <FileCheck className="h-5 w-5 mr-2" aria-hidden="true" />
-                      Excused
-                    </Button>
                   </div>
                 ) : (
                   <div className="text-sm p-3 border-2" style={{ borderColor: '#E8F4F8' }}>
@@ -620,8 +550,6 @@ export function ClassAttendanceInline({ user, classId, onBack }: ClassAttendance
                             ? '#22c55e'
                             : studentAttendance?.status === 'absent'
                             ? '#dc2626'
-                            : studentAttendance?.status === 'late'
-                            ? '#F26522'
                             : '#0066A1',
                       }}
                     >

@@ -244,7 +244,7 @@ const generateAttendanceRecords = (): AttendanceRecord[] => {
   
   c1Students.forEach((studentId) => {
     dates.forEach((date) => {
-      let status: 'present' | 'absent' | 'late' | 'excused' = 'present';
+      let status: 'present' | 'absent' = 'present';
       let notes = '';
       const isSubDate = date >= '2024-12-01' && date <= '2024-12-10';
       
@@ -266,12 +266,6 @@ const generateAttendanceRecords = (): AttendanceRecord[] => {
         notes = 'Absent';
       }
       
-      // s3 (Charlie Clark) - occasionally late
-      if (studentId === 's3' && date === '2024-12-05') {
-        status = 'late';
-        notes = 'Arrived 15 minutes late';
-      }
-      
       records.push({
         id: `a${recordId++}`,
         studentId,
@@ -291,7 +285,7 @@ const generateAttendanceRecords = (): AttendanceRecord[] => {
   const c2Students = ['s11', 's12', 's13', 's14', 's15', 's16', 's17', 's18'];
   c2Students.forEach((studentId) => {
     dates.forEach((date) => {
-      let status: 'present' | 'absent' | 'late' | 'excused' = 'present';
+      let status: 'present' | 'absent' = 'present';
       let notes = '';
       
       // s12 (Laura Lee) - 3 consecutive absences
@@ -325,7 +319,7 @@ const generateAttendanceRecords = (): AttendanceRecord[] => {
   const c3Students = ['s19', 's20', 's21', 's22', 's23', 's24'];
   c3Students.forEach((studentId) => {
     dates.forEach((date) => {
-      let status: 'present' | 'absent' | 'late' | 'excused' = 'present';
+      let status: 'present' | 'absent' = 'present';
       let notes = '';
       
       // s20 (Tara Taylor) - 3 consecutive absences
@@ -359,7 +353,7 @@ const generateAttendanceRecords = (): AttendanceRecord[] => {
   const c4Students = ['s25', 's26', 's27', 's28'];
   c4Students.forEach((studentId) => {
     dates.forEach((date) => {
-      let status: 'present' | 'absent' | 'late' | 'excused' = 'present';
+      let status: 'present' | 'absent' = 'present';
       let notes = '';
       
       // s26 (Zoe Adams) - 3 consecutive absences
@@ -387,7 +381,7 @@ const generateAttendanceRecords = (): AttendanceRecord[] => {
   const c5Students = ['s29', 's30'];
   c5Students.forEach((studentId) => {
     dates.forEach((date) => {
-      let status: 'present' | 'absent' | 'late' | 'excused' = 'present';
+      let status: 'present' | 'absent' = 'present';
       let notes = '';
       
       // s30 (Daisy Ellis) - 3 consecutive absences
